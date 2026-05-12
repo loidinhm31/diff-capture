@@ -103,6 +103,10 @@ export function RegionSelector({ sourceCanvas, pageNum, onRegionChange }: Region
   }
 
   // ── Pointer event helpers ───────────────────────────────────────────────────
+  // Keep a stable ref to onRegionChange so callbacks don't go stale
+  const onRegionChangeRef = useRef(onRegionChange)
+  useEffect(() => { onRegionChangeRef.current = onRegionChange }, [onRegionChange])
+
   function getRelativePos(e: React.PointerEvent<HTMLCanvasElement>) {
     const rect = overlayRef.current!.getBoundingClientRect()
     return { x: e.clientX - rect.left, y: e.clientY - rect.top }
@@ -144,22 +148,20 @@ export function RegionSelector({ sourceCanvas, pageNum, onRegionChange }: Region
     if (norm.width < MIN_SIZE || norm.height < MIN_SIZE) {
       // Too small — treat as deselect
       setDisplayRect(null)
-      onRegionChange(null)
+      onRegionChangeRef.current(null)
       return
     }
     setDisplayRect(finalDisplay)
-    onRegionChange(toSourceCoords(finalDisplay))
+    onRegionChangeRef.current(toSourceCoords(finalDisplay))
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pageNum, sourceCanvas])
 
   function handleClear() {
     setDisplayRect(null)
-    onRegionChange(null)
+    onRegionChangeRef.current(null)
   }
 
   // ── Escape key clears current selection ────────────────────────────────────
-  const onRegionChangeRef = useRef(onRegionChange)
-  useEffect(() => { onRegionChangeRef.current = onRegionChange }, [onRegionChange])
   useEffect(() => {
     function onKeyDown(e: KeyboardEvent) {
       if (e.key === 'Escape') {

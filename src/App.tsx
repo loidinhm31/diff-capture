@@ -39,6 +39,24 @@ export default function App() {
   const [syncPages, setSyncPages] = useState(false)
   const [previewExpanded, setPreviewExpanded] = useState(true)
 
+  const handleRegionChangeA = useCallback((region: Region | null) => {
+    setRegionA(region)
+    if (phase === 'done') {
+      setTextA('')
+      setTextB('')
+      setPhase('preview')
+    }
+  }, [phase])
+
+  const handleRegionChangeB = useCallback((region: Region | null) => {
+    setRegionB(region)
+    if (phase === 'done') {
+      setTextA('')
+      setTextB('')
+      setPhase('preview')
+    }
+  }, [phase])
+
   const isBusy = phase === 'rendering' || phase === 'processing'
   const canPreview = fileA !== null && fileB !== null && !isBusy
   const canCompare = fileA !== null && fileB !== null && !isBusy
@@ -257,9 +275,9 @@ export default function App() {
                 onPageChange={(p) => {
                   setCurrentPageA(p)
                   if (syncPages) setCurrentPageB(Math.min(p, pagesB.length || 1))
-                  setRegionA(null)
+                  handleRegionChangeA(null)
                 }}
-                onRegionChange={setRegionA}
+                onRegionChange={handleRegionChangeA}
               />
               <PdfPageViewer
                 label={fileB?.name ?? 'PDF B'}
@@ -268,9 +286,9 @@ export default function App() {
                 onPageChange={(p) => {
                   setCurrentPageB(p)
                   if (syncPages) setCurrentPageA(Math.min(p, pagesA.length || 1))
-                  setRegionB(null)
+                  handleRegionChangeB(null)
                 }}
-                onRegionChange={setRegionB}
+                onRegionChange={handleRegionChangeB}
               />
             </div>
           </section>
