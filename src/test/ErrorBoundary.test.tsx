@@ -76,7 +76,9 @@ describe('ErrorBoundary', () => {
     expect(console.error).toHaveBeenCalledWith(
       '[ErrorBoundary]',
       expect.any(Error),
-      expect.anything()
+      expect.anything(),
+      'cause:',
+      undefined
     )
   })
 
