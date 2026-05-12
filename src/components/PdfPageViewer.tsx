@@ -1,14 +1,18 @@
 import { useMemo } from 'react'
 import type { RenderedPage } from '../utils/pdf-renderer'
+import type { Region } from '../types'
+import { RegionSelector } from './RegionSelector'
 
 interface PdfPageViewerProps {
   label: string
   pages: RenderedPage[]
   currentPage: number
   onPageChange: (page: number) => void
+  /** When provided, renders RegionSelector overlay instead of a plain image */
+  onRegionChange?: (region: Region | null) => void
 }
 
-export function PdfPageViewer({ label, pages, currentPage, onPageChange }: PdfPageViewerProps) {
+export function PdfPageViewer({ label, pages, currentPage, onPageChange, onRegionChange }: PdfPageViewerProps) {
   const total = pages.length
   const page = pages[currentPage - 1]
 
@@ -42,7 +46,13 @@ export function PdfPageViewer({ label, pages, currentPage, onPageChange }: PdfPa
       </div>
 
       <div className="pdf-page-viewer-image-wrap">
-        {imgSrc ? (
+        {onRegionChange ? (
+          <RegionSelector
+            sourceCanvas={page?.canvas ?? null}
+            pageNum={currentPage}
+            onRegionChange={onRegionChange}
+          />
+        ) : imgSrc ? (
           <img
             src={imgSrc}
             alt={`${label} page ${currentPage}`}

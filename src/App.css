@@ -406,6 +406,89 @@
   background: #0f766e;
 }
 
+/* ===================== Compare Regions button ===================== */
+.btn-compare-regions {
+  background: #7c3aed;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 0.75rem 2rem;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-compare-regions:disabled {
+  background: #c4b5fd;
+  cursor: not-allowed;
+}
+
+.btn-compare-regions:not(:disabled):hover {
+  background: #6d28d9;
+}
+
+/* ===================== Region Selector ===================== */
+.region-selector-wrap {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.region-selector-img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+.region-selector-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  cursor: crosshair;
+  touch-action: none;
+}
+
+.region-selector-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.4rem 0.75rem;
+  background: #f8fafc;
+  border-top: 1px solid #e5e7eb;
+  gap: 0.5rem;
+}
+
+.region-selector-hint {
+  font-size: 0.78rem;
+  color: #6b7280;
+  flex: 1;
+}
+
+.btn-clear-region {
+  background: #e5e7eb;
+  color: #374151;
+  border: none;
+  border-radius: 5px;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: background 0.15s;
+  flex-shrink: 0;
+}
+
+.btn-clear-region:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.btn-clear-region:not(:disabled):hover {
+  background: #d1d5db;
+}
+
 /* ===================== Accessibility ===================== */
 .sr-only {
   position: absolute;

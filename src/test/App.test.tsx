@@ -75,6 +75,13 @@ vi.mock('../components/DiffViewer', () => ({
   ),
 }))
 
+// Mock RegionSelector — avoid canvas/ResizeObserver complexity in App integration tests
+vi.mock('../components/RegionSelector', () => ({
+  RegionSelector: ({ pageNum }: { pageNum: number }) => (
+    <div data-testid={`region-selector-${pageNum}`} />
+  ),
+}))
+
 import { renderPdfToCanvases } from '../utils/pdf-renderer'
 import { extractTextFromCanvases } from '../utils/ocr-engine'
 

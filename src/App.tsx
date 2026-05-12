@@ -5,6 +5,7 @@ import { ErrorBoundary } from './components/ErrorBoundary'
 import { PdfPageViewer } from './components/PdfPageViewer'
 import type { OcrProgressEvent } from './utils/ocr-engine'
 import type { RenderedPage } from './utils/pdf-renderer'
+import type { Region } from './types'
 import './App.css'
 
 // Code-split heavy diff viewer — only loaded after OCR completes
@@ -33,10 +34,13 @@ export default function App() {
   const [pagesB, setPagesB] = useState<RenderedPage[]>([])
   const [currentPageA, setCurrentPageA] = useState(1)
   const [currentPageB, setCurrentPageB] = useState(1)
+  const [regionA, setRegionA] = useState<Region | null>(null)
+  const [regionB, setRegionB] = useState<Region | null>(null)
 
   const isBusy = phase === 'rendering' || phase === 'processing'
   const canPreview = fileA !== null && fileB !== null && !isBusy
   const canCompare = fileA !== null && fileB !== null && !isBusy
+  const canCompareRegions = canCompare && phase === 'preview' && regionA !== null && regionB !== null
 
   const processFile = useCallback(async (
     file: File,
@@ -85,6 +89,37 @@ export default function App() {
     }
   }
 
+  async function handleCompareRegions() {
+    if (!regionA || !regionB) return
+    const pageA = pagesA[regionA.pageNum - 1]
+    const pageB = pagesB[regionB.pageNum - 1]
+    if (!pageA || !pageB) return
+    setPhase('processing')
+    setError(null)
+    setTextA('')
+    setTextB('')
+    try {
+      const { cropRegion } = await import('./utils/region-cropper')
+      const { extractTextFromCanvases } = await import('./utils/ocr-engine')
+      const croppedA = cropRegion(pageA.canvas, regionA)
+      const croppedB = cropRegion(pageB.canvas, regionB)
+      const ocrProgressA = (evt: OcrProgressEvent) =>
+        setProgressA({ label: 'Region A', status: evt.status, progress: evt.progress })
+      const ocrProgressB = (evt: OcrProgressEvent) =>
+        setProgressB({ label: 'Region B', status: evt.status, progress: evt.progress })
+      const [extractedA, extractedB] = await Promise.all([
+        extractTextFromCanvases([croppedA], ocrProgressA),
+        extractTextFromCanvases([croppedB], ocrProgressB),
+      ])
+      setTextA(extractedA)
+      setTextB(extractedB)
+      setPhase('done')
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unknown error occurred')
+      setPhase('error')
+    }
+  }
+
   async function handleCompare() {
     if (!fileA || !fileB) return
     setPhase('processing')
@@ -112,6 +147,8 @@ export default function App() {
     setTextB('')
     setError(null)
     setPhase('idle')
+    setRegionA(null)
+    setRegionB(null)
     // Free canvas memory
     setPagesA((prev) => { prev.forEach((p) => { p.canvas.width = 0; p.canvas.height = 0 }); return [] })
     setPagesB((prev) => { prev.forEach((p) => { p.canvas.width = 0; p.canvas.height = 0 }); return [] })
@@ -155,12 +192,21 @@ export default function App() {
             {phase === 'rendering' ? 'Rendering…' : 'Preview Pages'}
           </button>
           <button
+            className="btn-compare-regions"
+            onClick={handleCompareRegions}
+            disabled={!canCompareRegions}
+            aria-busy={phase === 'processing'}
+            title={!regionA || !regionB ? 'Draw a selection on each side first' : undefined}
+          >
+            {phase === 'processing' ? 'Processing…' : 'Compare Selected Regions'}
+          </button>
+          <button
             className="btn-compare"
             onClick={handleCompare}
             disabled={!canCompare}
             aria-busy={phase === 'processing'}
           >
-            {phase === 'processing' ? 'Processing…' : 'Compare Full PDFs'}
+            Compare Full PDFs
           </button>
           {phase !== 'idle' && (
             <button className="btn-reset" onClick={handleReset}>
@@ -183,13 +229,15 @@ export default function App() {
                 label={fileA?.name ?? 'PDF A'}
                 pages={pagesA}
                 currentPage={currentPageA}
-                onPageChange={setCurrentPageA}
+                onPageChange={(p) => { setCurrentPageA(p); setRegionA(null) }}
+                onRegionChange={setRegionA}
               />
               <PdfPageViewer
                 label={fileB?.name ?? 'PDF B'}
                 pages={pagesB}
                 currentPage={currentPageB}
-                onPageChange={setCurrentPageB}
+                onPageChange={(p) => { setCurrentPageB(p); setRegionB(null) }}
+                onRegionChange={setRegionB}
               />
             </div>
           </section>
