@@ -2,7 +2,9 @@ import { useState, useCallback, lazy, Suspense } from 'react'
 import { PdfUploader } from './components/PdfUploader'
 import { OcrProgress } from './components/OcrProgress'
 import { ErrorBoundary } from './components/ErrorBoundary'
+import { PdfPageViewer } from './components/PdfPageViewer'
 import type { OcrProgressEvent } from './utils/ocr-engine'
+import type { RenderedPage } from './utils/pdf-renderer'
 import './App.css'
 
 // Code-split heavy diff viewer — only loaded after OCR completes
@@ -10,7 +12,7 @@ const DiffViewer = lazy(() =>
   import('./components/DiffViewer').then((m) => ({ default: m.DiffViewer }))
 )
 
-type Phase = 'idle' | 'processing' | 'done' | 'error'
+type Phase = 'idle' | 'rendering' | 'preview' | 'processing' | 'done' | 'error'
 
 interface ProgressState {
   label: string
@@ -27,8 +29,14 @@ export default function App() {
   const [textB, setTextB] = useState('')
   const [progressA, setProgressA] = useState<ProgressState>({ label: 'PDF A', status: '', progress: 0 })
   const [progressB, setProgressB] = useState<ProgressState>({ label: 'PDF B', status: '', progress: 0 })
+  const [pagesA, setPagesA] = useState<RenderedPage[]>([])
+  const [pagesB, setPagesB] = useState<RenderedPage[]>([])
+  const [currentPageA, setCurrentPageA] = useState(1)
+  const [currentPageB, setCurrentPageB] = useState(1)
 
-  const canCompare = fileA !== null && fileB !== null && phase !== 'processing'
+  const isBusy = phase === 'rendering' || phase === 'processing'
+  const canPreview = fileA !== null && fileB !== null && !isBusy
+  const canCompare = fileA !== null && fileB !== null && !isBusy
 
   const processFile = useCallback(async (
     file: File,
@@ -49,6 +57,33 @@ export default function App() {
     }
     return extractTextFromCanvases(canvases, ocrProgressCb)
   }, [])
+
+  async function handlePreview() {
+    if (!fileA || !fileB) return
+    setPhase('rendering')
+    setError(null)
+    setPagesA([])
+    setPagesB([])
+    setCurrentPageA(1)
+    setCurrentPageB(1)
+    try {
+      const { renderPdfToCanvases } = await import('./utils/pdf-renderer')
+      const [renderedA, renderedB] = await Promise.all([
+        renderPdfToCanvases(fileA, (cur, total) =>
+          setProgressA({ label: 'PDF A', status: `Rendering page ${cur}/${total}`, progress: cur / total })
+        ),
+        renderPdfToCanvases(fileB, (cur, total) =>
+          setProgressB({ label: 'PDF B', status: `Rendering page ${cur}/${total}`, progress: cur / total })
+        ),
+      ])
+      setPagesA(renderedA)
+      setPagesB(renderedB)
+      setPhase('preview')
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unknown error occurred')
+      setPhase('error')
+    }
+  }
 
   async function handleCompare() {
     if (!fileA || !fileB) return
@@ -77,6 +112,11 @@ export default function App() {
     setTextB('')
     setError(null)
     setPhase('idle')
+    // Free canvas memory
+    setPagesA((prev) => { prev.forEach((p) => { p.canvas.width = 0; p.canvas.height = 0 }); return [] })
+    setPagesB((prev) => { prev.forEach((p) => { p.canvas.width = 0; p.canvas.height = 0 }); return [] })
+    setCurrentPageA(1)
+    setCurrentPageB(1)
     setProgressA({ label: 'PDF A', status: '', progress: 0 })
     setProgressB({ label: 'PDF B', status: '', progress: 0 })
   }
@@ -94,25 +134,33 @@ export default function App() {
             label="PDF A"
             file={fileA}
             onFileSelected={setFileA}
-            disabled={phase === 'processing'}
+            disabled={isBusy}
           />
           <div className="vs-badge" aria-hidden="true">VS</div>
           <PdfUploader
             label="PDF B"
             file={fileB}
             onFileSelected={setFileB}
-            disabled={phase === 'processing'}
+            disabled={isBusy}
           />
         </section>
 
         <div className="action-bar">
+          <button
+            className="btn-preview"
+            onClick={handlePreview}
+            disabled={!canPreview}
+            aria-busy={phase === 'rendering'}
+          >
+            {phase === 'rendering' ? 'Rendering…' : 'Preview Pages'}
+          </button>
           <button
             className="btn-compare"
             onClick={handleCompare}
             disabled={!canCompare}
             aria-busy={phase === 'processing'}
           >
-            {phase === 'processing' ? 'Processing…' : 'Compare PDFs'}
+            {phase === 'processing' ? 'Processing…' : 'Compare Full PDFs'}
           </button>
           {phase !== 'idle' && (
             <button className="btn-reset" onClick={handleReset}>
@@ -120,6 +168,32 @@ export default function App() {
             </button>
           )}
         </div>
+
+        {phase === 'rendering' && (
+          <section className="progress-section" aria-label="Render progress" aria-live="polite">
+            <OcrProgress {...progressA} />
+            <OcrProgress {...progressB} />
+          </section>
+        )}
+
+        {phase === 'preview' && (
+          <section className="preview-section" aria-label="PDF page preview">
+            <div className="preview-viewers">
+              <PdfPageViewer
+                label={fileA?.name ?? 'PDF A'}
+                pages={pagesA}
+                currentPage={currentPageA}
+                onPageChange={setCurrentPageA}
+              />
+              <PdfPageViewer
+                label={fileB?.name ?? 'PDF B'}
+                pages={pagesB}
+                currentPage={currentPageB}
+                onPageChange={setCurrentPageB}
+              />
+            </div>
+          </section>
+        )}
 
         {phase === 'processing' && (
           <section className="progress-section" aria-label="OCR progress" aria-live="polite">

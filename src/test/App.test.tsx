@@ -110,7 +110,7 @@ describe('App — initial state', () => {
 
   it('Compare button is disabled with no files', () => {
     render(<App />)
-    expect(screen.getByRole('button', { name: /compare pdfs/i })).toBeDisabled()
+    expect(screen.getByRole('button', { name: /compare full pdfs/i })).toBeDisabled()
   })
 
   it('Reset button is absent in idle state', () => {
@@ -123,14 +123,14 @@ describe('App — file selection', () => {
   it('enables Compare button after both files are selected', () => {
     render(<App />)
     selectFiles(makePdfFile('a.pdf'), makePdfFile('b.pdf'))
-    expect(screen.getByRole('button', { name: /compare pdfs/i })).not.toBeDisabled()
+    expect(screen.getByRole('button', { name: /compare full pdfs/i })).not.toBeDisabled()
   })
 
   it('keeps Compare button disabled when only one file is selected', () => {
     render(<App />)
     const inputs = document.querySelectorAll('input[type="file"]')
     fireEvent.change(inputs[0], { target: { files: [makePdfFile('a.pdf')] } })
-    expect(screen.getByRole('button', { name: /compare pdfs/i })).toBeDisabled()
+    expect(screen.getByRole('button', { name: /compare full pdfs/i })).toBeDisabled()
   })
 })
 
@@ -144,7 +144,7 @@ describe('App — comparison flow', () => {
 
     render(<App />)
     selectFiles(makePdfFile('a.pdf'), makePdfFile('b.pdf'))
-    fireEvent.click(screen.getByRole('button', { name: /compare pdfs/i }))
+    fireEvent.click(screen.getByRole('button', { name: /compare full pdfs/i }))
 
     await waitFor(() => {
       expect(screen.getByRole('button', { name: /processing/i })).toBeInTheDocument()
@@ -160,7 +160,7 @@ describe('App — comparison flow', () => {
   it('renders diff viewer after successful comparison', async () => {
     render(<App />)
     selectFiles(makePdfFile('a.pdf'), makePdfFile('b.pdf'))
-    fireEvent.click(screen.getByRole('button', { name: /compare pdfs/i }))
+    fireEvent.click(screen.getByRole('button', { name: /compare full pdfs/i }))
 
     await waitFor(() => {
       expect(screen.getByTestId('diff-viewer')).toBeInTheDocument()
@@ -173,7 +173,7 @@ describe('App — comparison flow', () => {
   it('passes filenames as titles to DiffViewer', async () => {
     render(<App />)
     selectFiles(makePdfFile('contract.pdf'), makePdfFile('revised.pdf'))
-    fireEvent.click(screen.getByRole('button', { name: /compare pdfs/i }))
+    fireEvent.click(screen.getByRole('button', { name: /compare full pdfs/i }))
 
     await waitFor(() => {
       const viewer = screen.getByTestId('diff-viewer')
@@ -185,7 +185,7 @@ describe('App — comparison flow', () => {
   it('shows Reset button after comparison completes', async () => {
     render(<App />)
     selectFiles(makePdfFile('a.pdf'), makePdfFile('b.pdf'))
-    fireEvent.click(screen.getByRole('button', { name: /compare pdfs/i }))
+    fireEvent.click(screen.getByRole('button', { name: /compare full pdfs/i }))
 
     await waitFor(() => {
       expect(screen.getByRole('button', { name: /reset/i })).toBeInTheDocument()
@@ -201,7 +201,7 @@ describe('App — error handling', () => {
 
     render(<App />)
     selectFiles(makePdfFile('bad.pdf'), makePdfFile('b.pdf'))
-    fireEvent.click(screen.getByRole('button', { name: /compare pdfs/i }))
+    fireEvent.click(screen.getByRole('button', { name: /compare full pdfs/i }))
 
     await waitFor(() => {
       expect(screen.getByRole('alert')).toBeInTheDocument()
@@ -216,7 +216,7 @@ describe('App — error handling', () => {
 
     render(<App />)
     selectFiles(makePdfFile('a.pdf'), makePdfFile('b.pdf'))
-    fireEvent.click(screen.getByRole('button', { name: /compare pdfs/i }))
+    fireEvent.click(screen.getByRole('button', { name: /compare full pdfs/i }))
 
     await waitFor(() => {
       expect(screen.getByRole('alert')).toBeInTheDocument()
@@ -229,7 +229,7 @@ describe('App — error handling', () => {
 
     render(<App />)
     selectFiles(makePdfFile('a.pdf'), makePdfFile('b.pdf'))
-    fireEvent.click(screen.getByRole('button', { name: /compare pdfs/i }))
+    fireEvent.click(screen.getByRole('button', { name: /compare full pdfs/i }))
 
     await waitFor(() => {
       const alert = screen.getByRole('alert')
@@ -242,7 +242,7 @@ describe('App — reset', () => {
   it('resets to idle state and hides diff viewer', async () => {
     render(<App />)
     selectFiles(makePdfFile('a.pdf'), makePdfFile('b.pdf'))
-    fireEvent.click(screen.getByRole('button', { name: /compare pdfs/i }))
+    fireEvent.click(screen.getByRole('button', { name: /compare full pdfs/i }))
 
     await waitFor(() => {
       expect(screen.getByTestId('diff-viewer')).toBeInTheDocument()
@@ -251,13 +251,13 @@ describe('App — reset', () => {
     fireEvent.click(screen.getByRole('button', { name: /reset/i }))
 
     expect(screen.queryByTestId('diff-viewer')).not.toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /compare pdfs/i })).toBeDisabled()
+    expect(screen.getByRole('button', { name: /compare full pdfs/i })).toBeDisabled()
   })
 
   it('hides Reset button after reset', async () => {
     render(<App />)
     selectFiles(makePdfFile('a.pdf'), makePdfFile('b.pdf'))
-    fireEvent.click(screen.getByRole('button', { name: /compare pdfs/i }))
+    fireEvent.click(screen.getByRole('button', { name: /compare full pdfs/i }))
 
     await waitFor(() => {
       expect(screen.getByRole('button', { name: /reset/i })).toBeInTheDocument()
@@ -270,7 +270,7 @@ describe('App — reset', () => {
   it('allows re-comparison after reset', async () => {
     render(<App />)
     selectFiles(makePdfFile('a.pdf'), makePdfFile('b.pdf'))
-    fireEvent.click(screen.getByRole('button', { name: /compare pdfs/i }))
+    fireEvent.click(screen.getByRole('button', { name: /compare full pdfs/i }))
 
     await waitFor(() => {
       expect(screen.getByRole('button', { name: /reset/i })).toBeInTheDocument()
@@ -278,6 +278,69 @@ describe('App — reset', () => {
 
     fireEvent.click(screen.getByRole('button', { name: /reset/i }))
     selectFiles(makePdfFile('c.pdf'), makePdfFile('d.pdf'))
-    expect(screen.getByRole('button', { name: /compare pdfs/i })).not.toBeDisabled()
+    expect(screen.getByRole('button', { name: /compare full pdfs/i })).not.toBeDisabled()
+  })
+})
+
+describe('App — preview flow', () => {
+  it('Preview Pages button is disabled with no files', () => {
+    render(<App />)
+    expect(screen.getByRole('button', { name: /preview pages/i })).toBeDisabled()
+  })
+
+  it('Preview Pages button enables after both files selected', () => {
+    render(<App />)
+    selectFiles(makePdfFile('a.pdf'), makePdfFile('b.pdf'))
+    expect(screen.getByRole('button', { name: /preview pages/i })).not.toBeDisabled()
+  })
+
+  it('renders two PDF page viewers after preview', async () => {
+    render(<App />)
+    selectFiles(makePdfFile('a.pdf'), makePdfFile('b.pdf'))
+    fireEvent.click(screen.getByRole('button', { name: /preview pages/i }))
+
+    await waitFor(() => {
+      expect(screen.getByLabelText('PDF page preview')).toBeInTheDocument()
+      expect(document.querySelectorAll('.pdf-page-viewer').length).toBe(2)
+    })
+  })
+
+  it('shows page navigation controls in preview mode', async () => {
+    render(<App />)
+    selectFiles(makePdfFile('a.pdf'), makePdfFile('b.pdf'))
+    fireEvent.click(screen.getByRole('button', { name: /preview pages/i }))
+
+    await waitFor(() => {
+      expect(screen.getAllByLabelText(/previous page/i).length).toBeGreaterThanOrEqual(1)
+      expect(screen.getAllByLabelText(/next page/i).length).toBeGreaterThanOrEqual(1)
+    })
+  })
+
+  it('shows error banner if PDF rendering fails during preview', async () => {
+    vi.mocked(renderPdfToCanvases).mockRejectedValueOnce(
+      new Error('Failed to render PDF')
+    )
+
+    render(<App />)
+    selectFiles(makePdfFile('bad.pdf'), makePdfFile('b.pdf'))
+    fireEvent.click(screen.getByRole('button', { name: /preview pages/i }))
+
+    await waitFor(() => {
+      expect(screen.getByRole('alert')).toBeInTheDocument()
+      expect(screen.getByText(/Failed to render PDF/)).toBeInTheDocument()
+    })
+  })
+
+  it('reset clears preview and returns to idle', async () => {
+    render(<App />)
+    selectFiles(makePdfFile('a.pdf'), makePdfFile('b.pdf'))
+    fireEvent.click(screen.getByRole('button', { name: /preview pages/i }))
+
+    await waitFor(() => {
+      expect(screen.getByLabelText('PDF page preview')).toBeInTheDocument()
+    })
+
+    fireEvent.click(screen.getByRole('button', { name: /reset/i }))
+    expect(screen.queryByLabelText('PDF page preview')).not.toBeInTheDocument()
   })
 })
