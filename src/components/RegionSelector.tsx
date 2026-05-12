@@ -152,6 +152,20 @@ export function RegionSelector({ sourceCanvas, pageNum, onRegionChange }: Region
     onRegionChange(null)
   }
 
+  // ── Escape key clears current selection ────────────────────────────────────
+  const onRegionChangeRef = useRef(onRegionChange)
+  useEffect(() => { onRegionChangeRef.current = onRegionChange }, [onRegionChange])
+  useEffect(() => {
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key === 'Escape') {
+        setDisplayRect(null)
+        onRegionChangeRef.current(null)
+      }
+    }
+    document.addEventListener('keydown', onKeyDown)
+    return () => document.removeEventListener('keydown', onKeyDown)
+  }, [])
+
   // Build the image src from source canvas — memoized to avoid regenerating on every render
   const imgSrc = useMemo(
     () => (sourceCanvas ? sourceCanvas.toDataURL('image/png') : ''),

@@ -305,6 +305,66 @@
   flex-shrink: 0;
 }
 
+/* ===================== Zoom Controls ===================== */
+.pdf-page-viewer-zoom-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.btn-zoom {
+  background: #e5e7eb;
+  border: none;
+  border-radius: 4px;
+  width: 1.6rem;
+  height: 1.6rem;
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
+}
+
+.btn-zoom:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.btn-zoom:not(:disabled):hover {
+  background: #d1d5db;
+}
+
+.zoom-level {
+  font-size: 0.78rem;
+  color: #374151;
+  min-width: 2.8rem;
+  text-align: center;
+}
+
+/* ===================== Zoom wrap ===================== */
+.pdf-page-viewer-zoom-wrap {
+  flex-shrink: 0;
+}
+
+/* ===================== Sync Bar ===================== */
+.preview-sync-bar {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 0.75rem;
+}
+
+.sync-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.85rem;
+  color: #374151;
+  cursor: pointer;
+  user-select: none;
+}
+
 .pdf-page-viewer-image-wrap {
   overflow: auto;
   background: #e5e7eb;
@@ -316,7 +376,7 @@
 
 .pdf-page-viewer-img {
   display: block;
-  max-width: 100%;
+  width: 100%;
   height: auto;
 }
 

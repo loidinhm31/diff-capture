@@ -36,6 +36,7 @@ export default function App() {
   const [currentPageB, setCurrentPageB] = useState(1)
   const [regionA, setRegionA] = useState<Region | null>(null)
   const [regionB, setRegionB] = useState<Region | null>(null)
+  const [syncPages, setSyncPages] = useState(false)
 
   const isBusy = phase === 'rendering' || phase === 'processing'
   const canPreview = fileA !== null && fileB !== null && !isBusy
@@ -149,6 +150,7 @@ export default function App() {
     setPhase('idle')
     setRegionA(null)
     setRegionB(null)
+    setSyncPages(false)
     // Free canvas memory
     setPagesA((prev) => { prev.forEach((p) => { p.canvas.width = 0; p.canvas.height = 0 }); return [] })
     setPagesB((prev) => { prev.forEach((p) => { p.canvas.width = 0; p.canvas.height = 0 }); return [] })
@@ -224,19 +226,38 @@ export default function App() {
 
         {phase === 'preview' && (
           <section className="preview-section" aria-label="PDF page preview">
+            <div className="preview-sync-bar">
+              <label className="sync-toggle">
+                <input
+                  type="checkbox"
+                  checked={syncPages}
+                  onChange={(e) => setSyncPages(e.target.checked)}
+                  aria-label="Sync page navigation"
+                />
+                Sync page navigation
+              </label>
+            </div>
             <div className="preview-viewers">
               <PdfPageViewer
                 label={fileA?.name ?? 'PDF A'}
                 pages={pagesA}
                 currentPage={currentPageA}
-                onPageChange={(p) => { setCurrentPageA(p); setRegionA(null) }}
+                onPageChange={(p) => {
+                  setCurrentPageA(p)
+                  if (syncPages) setCurrentPageB(Math.min(p, pagesB.length || 1))
+                  setRegionA(null)
+                }}
                 onRegionChange={setRegionA}
               />
               <PdfPageViewer
                 label={fileB?.name ?? 'PDF B'}
                 pages={pagesB}
                 currentPage={currentPageB}
-                onPageChange={(p) => { setCurrentPageB(p); setRegionB(null) }}
+                onPageChange={(p) => {
+                  setCurrentPageB(p)
+                  if (syncPages) setCurrentPageA(Math.min(p, pagesA.length || 1))
+                  setRegionB(null)
+                }}
                 onRegionChange={setRegionB}
               />
             </div>

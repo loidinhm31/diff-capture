@@ -351,3 +351,39 @@ describe('App — preview flow', () => {
     expect(screen.queryByLabelText('PDF page preview')).not.toBeInTheDocument()
   })
 })
+
+describe('App — sync page navigation', () => {
+  it('shows sync toggle in preview mode', async () => {
+    render(<App />)
+    selectFiles(makePdfFile('a.pdf'), makePdfFile('b.pdf'))
+    fireEvent.click(screen.getByRole('button', { name: /preview pages/i }))
+
+    await waitFor(() => {
+      expect(screen.getByRole('checkbox', { name: /sync page navigation/i })).toBeInTheDocument()
+    })
+  })
+
+  it('sync checkbox is unchecked by default', async () => {
+    render(<App />)
+    selectFiles(makePdfFile('a.pdf'), makePdfFile('b.pdf'))
+    fireEvent.click(screen.getByRole('button', { name: /preview pages/i }))
+
+    await waitFor(() => {
+      expect(screen.getByRole('checkbox', { name: /sync page navigation/i })).not.toBeChecked()
+    })
+  })
+
+  it('sync checkbox can be toggled on and off', async () => {
+    render(<App />)
+    selectFiles(makePdfFile('a.pdf'), makePdfFile('b.pdf'))
+    fireEvent.click(screen.getByRole('button', { name: /preview pages/i }))
+
+    await waitFor(() => {
+      const checkbox = screen.getByRole('checkbox', { name: /sync page navigation/i })
+      fireEvent.click(checkbox)
+      expect(checkbox).toBeChecked()
+      fireEvent.click(checkbox)
+      expect(checkbox).not.toBeChecked()
+    })
+  })
+})
