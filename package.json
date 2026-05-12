@@ -19,6 +19,9 @@
     "react-dom": "^19.2.6",
     "tesseract.js": "^7.0.0"
   },
+  "pnpm": {
+    "onlyBuiltDependencies": ["tesseract.js"]
+  },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@testing-library/jest-dom": "^6.9.1",
