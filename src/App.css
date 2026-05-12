@@ -262,10 +262,58 @@
   margin-bottom: 1.5rem;
 }
 
+.preview-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.btn-collapse {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: none;
+  border: none;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #374151;
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  border-radius: 6px;
+  transition: background 0.15s;
+}
+
+.btn-collapse:hover {
+  background: #e5e7eb;
+}
+
+.collapse-chevron {
+  display: inline-block;
+  font-size: 1.15rem;
+  line-height: 1;
+  transition: transform 0.2s ease;
+  transform: rotate(0deg);
+}
+
+.collapse-chevron.expanded {
+  transform: rotate(90deg);
+}
+
 .preview-viewers {
   display: flex;
   gap: 1.5rem;
   align-items: flex-start;
+  overflow: hidden;
+  transition: max-height 0.3s ease, opacity 0.25s ease;
+  max-height: 2000px;
+  opacity: 1;
+}
+
+.preview-viewers.collapsed {
+  max-height: 0;
+  opacity: 0;
+  margin: 0;
 }
 
 /* ===================== PdfPageViewer ===================== */
@@ -346,14 +394,11 @@
 /* ===================== Zoom wrap ===================== */
 .pdf-page-viewer-zoom-wrap {
   flex-shrink: 0;
+  position: relative;
+  margin-inline: auto;
 }
 
-/* ===================== Sync Bar ===================== */
-.preview-sync-bar {
-  display: flex;
-  justify-content: center;
-  margin-bottom: 0.75rem;
-}
+/* ===================== Sync Toggle ===================== */
 
 .sync-toggle {
   display: flex;
@@ -370,7 +415,7 @@
   background: #e5e7eb;
   max-height: 65vh;
   display: flex;
-  justify-content: center;
+  justify-content: flex-start;
   align-items: flex-start;
 }
 
@@ -498,7 +543,7 @@
 
 .region-selector-img {
   display: block;
-  max-width: 100%;
+  width: 100%;
   height: auto;
   user-select: none;
   -webkit-user-drag: none;

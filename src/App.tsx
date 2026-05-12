@@ -37,6 +37,7 @@ export default function App() {
   const [regionA, setRegionA] = useState<Region | null>(null)
   const [regionB, setRegionB] = useState<Region | null>(null)
   const [syncPages, setSyncPages] = useState(false)
+  const [previewExpanded, setPreviewExpanded] = useState(true)
 
   const isBusy = phase === 'rendering' || phase === 'processing'
   const canPreview = fileA !== null && fileB !== null && !isBusy
@@ -224,20 +225,31 @@ export default function App() {
           </section>
         )}
 
-        {phase === 'preview' && (
+        {(phase === 'preview' || phase === 'processing' || phase === 'done') && pagesA.length > 0 && pagesB.length > 0 && (
           <section className="preview-section" aria-label="PDF page preview">
-            <div className="preview-sync-bar">
-              <label className="sync-toggle">
-                <input
-                  type="checkbox"
-                  checked={syncPages}
-                  onChange={(e) => setSyncPages(e.target.checked)}
-                  aria-label="Sync page navigation"
-                />
-                Sync page navigation
-              </label>
+            <div className="preview-toolbar">
+              <button
+                className="btn-collapse"
+                onClick={() => setPreviewExpanded((v) => !v)}
+                aria-expanded={previewExpanded}
+                aria-controls="preview-content"
+              >
+                <span className={`collapse-chevron${previewExpanded ? ' expanded' : ''}`}>›</span>
+                Preview
+              </button>
+              {previewExpanded && (
+                <label className="sync-toggle">
+                  <input
+                    type="checkbox"
+                    checked={syncPages}
+                    onChange={(e) => setSyncPages(e.target.checked)}
+                    aria-label="Sync page navigation"
+                  />
+                  Sync page navigation
+                </label>
+              )}
             </div>
-            <div className="preview-viewers">
+            <div id="preview-content" className={`preview-viewers${previewExpanded ? '' : ' collapsed'}`}>
               <PdfPageViewer
                 label={fileA?.name ?? 'PDF A'}
                 pages={pagesA}
