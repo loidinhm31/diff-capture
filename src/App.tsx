@@ -38,6 +38,8 @@ export default function App() {
   const [regionB, setRegionB] = useState<Region | null>(null)
   const [syncPages, setSyncPages] = useState(false)
   const [previewExpanded, setPreviewExpanded] = useState(true)
+  const [pasteCanvasA, setPasteCanvasA] = useState<HTMLCanvasElement | null>(null)
+  const [pasteCanvasB, setPasteCanvasB] = useState<HTMLCanvasElement | null>(null)
 
   const handleRegionChangeA = useCallback((region: Region | null) => {
     setRegionA(region)
@@ -111,9 +113,9 @@ export default function App() {
 
   async function handleCompareRegions() {
     if (!regionA || !regionB) return
-    const pageA = pagesA[regionA.pageNum - 1]
-    const pageB = pagesB[regionB.pageNum - 1]
-    if (!pageA || !pageB) return
+    const canvasA = pasteCanvasA ?? pagesA[regionA.pageNum - 1]?.canvas
+    const canvasB = pasteCanvasB ?? pagesB[regionB.pageNum - 1]?.canvas
+    if (!canvasA || !canvasB) return
     setPhase('processing')
     setError(null)
     setTextA('')
@@ -121,8 +123,8 @@ export default function App() {
     try {
       const { cropRegion } = await import('./utils/region-cropper')
       const { extractTextFromCanvases } = await import('./utils/ocr-engine')
-      const croppedA = cropRegion(pageA.canvas, regionA)
-      const croppedB = cropRegion(pageB.canvas, regionB)
+      const croppedA = cropRegion(canvasA, regionA)
+      const croppedB = cropRegion(canvasB, regionB)
       const ocrProgressA = (evt: OcrProgressEvent) =>
         setProgressA({ label: 'Region A', status: evt.status, progress: evt.progress })
       const ocrProgressB = (evt: OcrProgressEvent) =>
@@ -170,6 +172,8 @@ export default function App() {
     setRegionA(null)
     setRegionB(null)
     setSyncPages(false)
+    setPasteCanvasA(null)
+    setPasteCanvasB(null)
     // Free canvas memory
     setPagesA((prev) => { prev.forEach((p) => { p.canvas.width = 0; p.canvas.height = 0 }); return [] })
     setPagesB((prev) => { prev.forEach((p) => { p.canvas.width = 0; p.canvas.height = 0 }); return [] })
@@ -278,6 +282,7 @@ export default function App() {
                   handleRegionChangeA(null)
                 }}
                 onRegionChange={handleRegionChangeA}
+                onPasteCanvasChange={setPasteCanvasA}
               />
               <PdfPageViewer
                 label={fileB?.name ?? 'PDF B'}
@@ -289,6 +294,7 @@ export default function App() {
                   handleRegionChangeB(null)
                 }}
                 onRegionChange={handleRegionChangeB}
+                onPasteCanvasChange={setPasteCanvasB}
               />
             </div>
           </section>

@@ -6,7 +6,7 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
   import.meta.url
 ).href
 
-const SCALE = 2 // 2x DPI for better OCR accuracy
+const SCALE = 2 // 2x DPI for rendering accuracy
 
 export interface RenderedPage {
   pageNum: number
