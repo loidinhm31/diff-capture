@@ -1,11 +1,18 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
 import { PdfPageViewer } from '../components/PdfPageViewer'
+import type { Region } from '../types'
 import type { RenderedPage } from '../utils/pdf-renderer'
 
 // ── Mocks ──────────────────────────────────────────────────────────────────
 vi.mock('../components/RegionSelector', () => ({
-  RegionSelector: ({ pageNum, onRegionChange }: { pageNum: number; onRegionChange: (r: null) => void }) => (
+  RegionSelector: ({
+    pageNum,
+    onRegionChange,
+  }: {
+    pageNum: number
+    onRegionChange: (region: Region | null) => void
+  }) => (
     <div data-testid={`region-selector-${pageNum}`} onClick={() => onRegionChange(null)} />
   ),
 }))
@@ -31,7 +38,7 @@ function renderViewer(
     pages: RenderedPage[]
     currentPage: number
     onPageChange: (p: number) => void
-    onRegionChange: (r: null) => void
+    onRegionChange: (region: Region | null) => void
   }> = {}
 ) {
   const defaults = {
