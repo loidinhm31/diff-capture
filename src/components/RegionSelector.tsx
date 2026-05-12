@@ -27,6 +27,9 @@ export function RegionSelector({ sourceCanvas, pageNum, onRegionChange }: Region
   const dragStart = useRef<{ x: number; y: number } | null>(null)
   const isDragging = useRef(false)
 
+  // Track canvas resize to trigger overlay redraw
+  const [canvasVersion, setCanvasVersion] = useState(0)
+
   // ── Sync overlay canvas size to match image render size ────────────────────
   useEffect(() => {
     if (!overlayRef.current || !imageRef.current || !sourceCanvas) return
@@ -35,6 +38,8 @@ export function RegionSelector({ sourceCanvas, pageNum, onRegionChange }: Region
     const syncSize = () => {
       canvas.width = img.offsetWidth
       canvas.height = img.offsetHeight
+      // Setting canvas.width/height clears the buffer — bump version to trigger redraw
+      setCanvasVersion((v) => v + 1)
     }
     syncSize()
     const ro = new ResizeObserver(syncSize)
@@ -42,7 +47,7 @@ export function RegionSelector({ sourceCanvas, pageNum, onRegionChange }: Region
     return () => ro.disconnect()
   }, [sourceCanvas])
 
-  // ── Redraw overlay whenever displayRect changes ─────────────────────────────
+  // ── Redraw overlay whenever displayRect changes or canvas is resized ───────
   useEffect(() => {
     const canvas = overlayRef.current
     if (!canvas) return
@@ -73,7 +78,7 @@ export function RegionSelector({ sourceCanvas, pageNum, onRegionChange }: Region
     for (const [cx, cy] of corners) {
       ctx.fillRect(cx - handleSize / 2, cy - handleSize / 2, handleSize, handleSize)
     }
-  }, [displayRect])
+  }, [displayRect, canvasVersion])
 
   // ── Map display coordinates → source canvas coordinates ────────────────────
   function toSourceCoords(rect: DisplayRect): Region {
